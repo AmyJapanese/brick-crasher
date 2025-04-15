@@ -1,7 +1,3 @@
-Here’s a draft of the README file for your GitHub repository in English. Feel free to tweak it as needed:
-
----
-
 # Breakout Game
 
 ## Description
