@@ -1,4 +1,4 @@
-# Breakout Game
+# Brick Crasher
 
 ## Description
 This is a simple breakout game created as a learning project. The goal was to enhance programming skills and explore game development using Python and Pygame.
