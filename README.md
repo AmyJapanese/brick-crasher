@@ -47,7 +47,3 @@ This project is licensed under the **MIT License**. Feel free to use or modify i
 - Add sound effects to enhance the gameplay experience.
 - Create graphics textures for a more polished look.
 - Introduce blocks with unique movements or special effects.
-
----
-
-Does this capture everything you envisioned? Let me know if you’d like me to refine it further! 😊
