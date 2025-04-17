@@ -1,6 +1,7 @@
 import pygame
 import sys
 import random
+import time  # タイム計測用
 
 # 初期設定
 pygame.init()
@@ -127,6 +128,8 @@ def main():
     score = 0
     lives = 3
     combo = 0  # コンボカウントの初期化
+    start_time = None  # ゲーム開始時刻
+    end_time = None  # ゲーム終了時刻
 
     # ボタン（ポーズ・ゲームオーバー用）の変数
     pause_continue = None
@@ -182,6 +185,7 @@ def main():
                         lives = 3
                         # 次は「待機状態」（ボール発進前）
                         state = "WAITING"
+                        start_time = time.time()  # ゲーム開始時刻を記録
 
             elif state == "WAITING":
                 # 発進待ち状態：Wキーまたは上矢印キーでスタート
@@ -231,6 +235,8 @@ def main():
                 ball.y = paddle.rect.top - ball.radius
                 ball.dy = -ball.dy
                 combo = 0  # パドルに当たったらコンボリセット
+                print(f"Combo reset:{combo}")  # コンボリセット表示（デバッグ用）
+                # パドルの位置に応じてボールの進行方向を変える（左右に振る）
 
             # ブロックとの衝突判定（同一フレームに複数衝突すればコンボ加算）
             ball_rect = ball.get_rect()
@@ -238,23 +244,26 @@ def main():
             if hit_blocks:
                 for block in hit_blocks:
                     blocks.remove(block)
-                combo += len(hit_blocks)  # コンボ数を増加
+                combo += 1  # コンボ数を増加
+                print(f"Combo: {combo}")  # コンボ数を表示（デバッグ用）
+                # スコア計算：ヒットしたブロックの数に応じてスコア加算
                 for i in range(len(hit_blocks)):
                     score += 100 + (combo - 1) * 50  # コンボに応じた得点計算
                 ball.dy = -ball.dy  # 反転
-            else:
-                combo = 0  # ヒットしなかった場合コンボリセット
 
             # 下端（画面外）に到達したとき：残基減少
             if ball.y - ball.radius > HEIGHT:
                 lives -= 1
                 combo = 0  # コンボリセット
+                print(f"Combo reset:{combo}")  # コンボリセット表示（デバッグ用）
+                # ボールの位置をパドル上に戻す
                 if lives > 0:
                     # パドル上にボールを再配置（発進待ち状態に戻す）
                     ball.reset(paddle.rect.centerx, paddle.rect.top - ball.radius)
                     state = "WAITING"  # 発進待ち状態に戻す
                 else:
                     state = "GAME_OVER"
+                    end_time = time.time()  # ゲーム終了時刻を記録
                     gameover_restart = Button((WIDTH // 2 - 75, HEIGHT // 2 + 20, 150, 50),
                                               "Restart", font, GRAY, BLACK)
                     gameover_quit = Button((WIDTH // 2 - 75, HEIGHT // 2 + 90, 150, 50),
@@ -263,6 +272,7 @@ def main():
             # すべてのブロックを消したらゲームクリアで終了
             if not blocks:
                 state = "GAME_OVER"
+                end_time = time.time()  # ゲーム終了時刻を記録
                 gameover_restart = Button((WIDTH // 2 - 75, HEIGHT // 2 + 20, 150, 50),
                                           "Restart", font, GRAY, BLACK)
                 gameover_quit = Button((WIDTH // 2 - 75, HEIGHT // 2 + 90, 150, 50),
@@ -297,8 +307,20 @@ def main():
             pause_continue.draw(screen)
             pause_exit.draw(screen)
         elif state == "GAME_OVER":
-            over_text = font.render(f"Game Over! Score: {score}", True, WHITE)
-            screen.blit(over_text, over_text.get_rect(center=(WIDTH // 2, HEIGHT // 2 - 100)))
+            if lives != 0:
+                clear_text = font.render("You cleared all blocks!", True, WHITE)
+                screen.blit(clear_text, clear_text.get_rect(center=(WIDTH // 2, HEIGHT // 2)))
+                # スコア表示
+                score_text = font.render(f"Score: {score}", True, WHITE)
+                screen.blit(score_text, score_text.get_rect(center=(WIDTH // 2, HEIGHT // 2 + 50)))
+                # ゲームクリア時の経過時間表示
+                if start_time and end_time:
+                    elapsed_time = end_time - start_time
+                    time_text = font.render(f"Time: {elapsed_time:.2f} seconds", True, WHITE)
+                    screen.blit(time_text, time_text.get_rect(center=(WIDTH // 2, HEIGHT // 2 - 50)))
+            else:
+                over_text = font.render(f"Game Over! Score: {score}", True, WHITE)
+                screen.blit(over_text, over_text.get_rect(center=(WIDTH // 2, HEIGHT // 2 - 100)))
             gameover_restart.draw(screen)
             gameover_quit.draw(screen)
 
