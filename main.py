@@ -5,11 +5,18 @@ import time  # タイム計測用
 
 # 初期設定
 pygame.init()
+pygame.mixer.init()  # サウンドの初期化
 WIDTH, HEIGHT = 600, 800
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Block Breaker")
 clock = pygame.time.Clock()
 font = pygame.font.SysFont(None, 36)
+
+# 効果音のロード
+brick_crash_sound = pygame.mixer.Sound("sounds/brick_crash.mp3")
+paddle_sound = pygame.mixer.Sound("sounds/paddle.mp3")
+gameover_sound = pygame.mixer.Sound("sounds/gameover.mp3")
+gameclear_sound = pygame.mixer.Sound("sounds/gameclear.mp3")
 
 # 色の定義
 WHITE   = (255, 255, 255)
@@ -72,13 +79,17 @@ class Ball:
         self.y += self.dy
         # 左右の壁で反転
         if self.x - self.radius <= 0:
+            paddle_sound.play()  # パドルに当たった時の効果音
             self.x = self.radius
             self.dx = -self.dx
         if self.x + self.radius >= WIDTH:
+            paddle_sound.play()  # パドルに当たった時の効果音
+            # ボールが右端に当たった場合、ボールの位置を修正して反転
             self.x = WIDTH - self.radius
             self.dx = -self.dx
         # 上側の壁で反転
         if self.y - self.radius <= 0:
+            paddle_sound.play()  # パドルに当たった時の効果音
             self.y = self.radius
             self.dy = -self.dy
 
@@ -209,7 +220,9 @@ def main():
                     pos = event.pos
                     if pause_continue.is_clicked(pos):
                         state = "PLAYING"
+                        brick_crash_sound.play()  # ボタン押下時の効果音
                     elif pause_exit.is_clicked(pos):
+                        brick_crash_sound.play()  # ボタン押下時の効果音
                         pygame.quit()
                         sys.exit()
 
@@ -218,7 +231,9 @@ def main():
                     pos = event.pos
                     if gameover_restart.is_clicked(pos):
                         state = "DIFFICULTY"  # 難易度選択から再スタート
+                        brick_crash_sound.play()  # ボタン押下時の効果音
                     elif gameover_quit.is_clicked(pos):
+                        brick_crash_sound.play()  # ボタン押下時の効果音
                         pygame.quit()
                         sys.exit()
 
@@ -235,7 +250,7 @@ def main():
                 ball.y = paddle.rect.top - ball.radius
                 ball.dy = -ball.dy
                 combo = 0  # パドルに当たったらコンボリセット
-                print(f"Combo reset:{combo}")  # コンボリセット表示（デバッグ用）
+                paddle_sound.play()  # パドルに当たった時の効果音
                 # パドルの位置に応じてボールの進行方向を変える（左右に振る）
 
             # ブロックとの衝突判定（同一フレームに複数衝突すればコンボ加算）
@@ -245,17 +260,16 @@ def main():
                 for block in hit_blocks:
                     blocks.remove(block)
                 combo += 1  # コンボ数を増加
-                print(f"Combo: {combo}")  # コンボ数を表示（デバッグ用）
                 # スコア計算：ヒットしたブロックの数に応じてスコア加算
                 for i in range(len(hit_blocks)):
                     score += 100 + (combo - 1) * 50  # コンボに応じた得点計算
                 ball.dy = -ball.dy  # 反転
+                brick_crash_sound.play()  # ブロックを壊した時の効果音
 
             # 下端（画面外）に到達したとき：残基減少
             if ball.y - ball.radius > HEIGHT:
                 lives -= 1
                 combo = 0  # コンボリセット
-                print(f"Combo reset:{combo}")  # コンボリセット表示（デバッグ用）
                 # ボールの位置をパドル上に戻す
                 if lives > 0:
                     # パドル上にボールを再配置（発進待ち状態に戻す）
@@ -264,6 +278,7 @@ def main():
                 else:
                     state = "GAME_OVER"
                     end_time = time.time()  # ゲーム終了時刻を記録
+                    gameover_sound.play()  # ゲームオーバー時の効果音
                     gameover_restart = Button((WIDTH // 2 - 75, HEIGHT // 2 + 20, 150, 50),
                                               "Restart", font, GRAY, BLACK)
                     gameover_quit = Button((WIDTH // 2 - 75, HEIGHT // 2 + 90, 150, 50),
@@ -273,6 +288,7 @@ def main():
             if not blocks:
                 state = "GAME_OVER"
                 end_time = time.time()  # ゲーム終了時刻を記録
+                gameclear_sound.play()  # ゲームクリア時の効果音
                 gameover_restart = Button((WIDTH // 2 - 75, HEIGHT // 2 + 20, 150, 50),
                                           "Restart", font, GRAY, BLACK)
                 gameover_quit = Button((WIDTH // 2 - 75, HEIGHT // 2 + 90, 150, 50),
@@ -313,11 +329,15 @@ def main():
                 # スコア表示
                 score_text = font.render(f"Score: {score}", True, WHITE)
                 screen.blit(score_text, score_text.get_rect(center=(WIDTH // 2, HEIGHT // 2 + 50)))
+                # コンボ数表示
+                combo_text = font.render(f"Combo: {combo}", True, WHITE)
+                screen.blit(combo_text, combo_text.get_rect(center=(WIDTH // 2, HEIGHT // 2 + 100)))
                 # ゲームクリア時の経過時間表示
                 if start_time and end_time:
                     elapsed_time = end_time - start_time
                     time_text = font.render(f"Time: {elapsed_time:.2f} seconds", True, WHITE)
                     screen.blit(time_text, time_text.get_rect(center=(WIDTH // 2, HEIGHT // 2 - 50)))
+                    
             else:
                 over_text = font.render(f"Game Over! Score: {score}", True, WHITE)
                 screen.blit(over_text, over_text.get_rect(center=(WIDTH // 2, HEIGHT // 2 - 100)))
