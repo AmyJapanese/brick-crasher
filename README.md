@@ -33,7 +33,7 @@ While the exact specifications are unknown, the game should run on most devices 
 - Use **Arrow Keys** or **WASD Keys** to control the paddle and bounce the ball.
 
 ## Known Issues
-- The combo system does not work as intended and requires debugging.
+Score/combo not displayed on the result screen
 
 ## Contributions
 Contributions are welcome! You can:
@@ -44,7 +44,6 @@ Contributions are welcome! You can:
 This project is licensed under the **MIT License**. Feel free to use or modify it as needed.
 
 ## Future Plans
-- Add sound effects to enhance the gameplay experience.
 - Create graphics textures for a more polished look.
 - Introduce blocks with unique movements or special effects.
 
