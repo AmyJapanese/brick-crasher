@@ -47,5 +47,5 @@ This project is licensed under the **MIT License**. Feel free to use or modify i
 - Create graphics textures for a more polished look.
 - Introduce blocks with unique movements or special effects.
 
-## Credit
+## Special Thanks
 - 効果音ラボ(https://soundeffect-lab.info)
